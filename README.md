@@ -50,22 +50,64 @@ To reduce clutter, native buttons like "Share", "Compare", and "New Chat" are mo
 
 ## 🔑 Google Credentials Configuration
 
-The script requires Google Drive API credentials to access creation and modification dates for your conversations.
+The script requires Google Drive API access to fetch creation and modification dates for your conversations. You need to generate a "Refresh Token" so the script can stay logged in.
 
-1. **Create a Google Cloud Project** at the [Google Cloud Console](https://console.cloud.google.com/).
-2. **Enable the Google Drive API** in "APIs & Services" → "Library".
-3. **Create OAuth Credentials**:
-   *   Go to "Credentials" → "Create Credentials" → "OAuth 2.0 Client IDs".
-   *   Select "Desktop App".
-   *   Copy your **Client ID** and **Client Secret**.
-4. **Generate a Refresh Token**:
-   *   Use the [OAuth 2.0 Playground](https://developers.google.com/oauthplayground).
-   *   Settings (Gear icon): Check "Use your own OAuth credentials" and paste your ID/Secret.
-   *   Scope: `https://www.googleapis.com/auth/drive.readonly`
-   *   Exchange the authorization code for tokens to get your **Refresh Token**.
-5. **Update the Script**:
-   *   Open the script in Tampermonkey.
-   *   Replace the values in the `CONFIG` object at the top of the script:
+### Step 1: Google Cloud Setup (Required for both methods)
+1.  Go to the [Google Cloud Console](https://console.cloud.google.com/).
+2.  Create a new project (e.g., named "AI Studio Enhancer").
+3.  **Enable the Drive API**:
+    *   Go to **APIs & Services** > **Library**.
+    *   Search for "Google Drive API" and click **Enable**.
+4.  **Create Credentials**:
+    *   Go to **APIs & Services** > **Credentials**.
+    *   Click **Create Credentials** > **OAuth 2.0 Client ID**.
+    *   *(If prompted, configure the Consent Screen: Select "External", give it a name, and save).*
+    *   **Application Type**: Select **Desktop app**.
+    *   Click **Create**.
+
+---
+
+### Step 2: Generate Tokens (Choose one method)
+
+#### 🅰️ Option A: Python Script (Recommended/Easy)
+We have provided a script that automates the process.
+
+1.  **Download JSON**: In the Google Cloud Console (where you created credentials in Step 1), click the **Download JSON** button for your OAuth Client.
+2.  **Save File**: Save the file into the same folder as this repo.
+    *   *Note: The filename will start with `client_secret_...` and end in `.json`.*
+3.  **Install Requirements**:
+    ```bash
+    pip install google-auth-oauthlib
+    ```
+4.  **Run Script**:
+    ```bash
+    python get_drive_tokens.py
+    ```
+5.  **Follow Prompts**: The script will detect your JSON file, give you a URL to visit to authorize, and then output the exact configuration block you need.
+
+#### 🅱️ Option B: OAuth Playground (Manual/No Code)
+If you don't want to run Python, you can do this manually.
+
+1.  **Get ID & Secret**: In Google Cloud Console, copy your **Client ID** and **Client Secret**.
+2.  Go to the [OAuth 2.0 Playground](https://developers.google.com/oauthplayground).
+3.  Click the **Settings (Gear icon)** in the top right.
+    *   Check **Use your own OAuth credentials**.
+    *   Paste your Client ID and Client Secret.
+4.  **Select Scopes**:
+    *   In the list on the left, find "Drive API v3".
+    *   Select `https://www.googleapis.com/auth/drive.readonly`.
+    *   Click **Authorize APIs**.
+5.  **Exchange Tokens**:
+    *   Click "Exchange authorization code for tokens".
+    *   Copy the **Refresh Token** from the response.
+
+---
+
+### Step 3: Update the UserScript
+Whichever method you used, you now have a Client ID, Client Secret, and Refresh Token.
+
+1.  Open the `aistudio-plus.user.js` script in your Tampermonkey/Greasemonkey editor.
+2.  Find the `CONFIG` block at the top of the file:
    ```javascript
    const CONFIG = {
        CLIENT_ID: "YOUR_CLIENT_ID",
@@ -75,12 +117,16 @@ The script requires Google Drive API credentials to access creation and modifica
        SYNC_INTERVAL_MINUTES: 15
    };
    ```
+3.  Replace the placeholder values with your actual credentials.
+4.  Save and reload AI Studio.
+
+---
 
 ## 💾 Installation
 
 1.  **Install Manager**: Get [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo) (Chrome/Edge) or [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) (Firefox).
 2.  **Install Script**: [**Click here to install `aistudio-plus.user.js`**](aistudio-plus.user.js)
-3.  **Configure**: Add your credentials as described above.
+3.  **Configure**: Follow the "Google Credentials Configuration" steps above.
 4.  **Enjoy**: Reload Google AI Studio.
 
 ## 📜 Development
